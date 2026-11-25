@@ -6,11 +6,22 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Icon, Avatar, Badge, CircularScore } from "@devdigest/ui";
 import type { PrMeta } from "@/lib/types";
+import { RunCostBadge } from "@/components/run-cost-badge";
+import { SeverityCounts } from "@/components/severity-counts";
 import { SIZE_COLOR, STATUS_META } from "../../constants";
 import { relativeTime, sizeOf } from "../../helpers";
 import { s } from "../../styles";
 
-export function PRRow({ pr, repoId }: { pr: PrMeta; repoId: string }) {
+export function PRRow({
+  pr,
+  repoId,
+  repoFullName,
+}: {
+  pr: PrMeta;
+  repoId: string;
+  /** "owner/name": lets the findings popover link file:line to GitHub. */
+  repoFullName?: string | null;
+}) {
   const t = useTranslations("prReview");
   const router = useRouter();
   const [h, setH] = React.useState(false);
@@ -54,9 +65,19 @@ export function PRRow({ pr, repoId }: { pr: PrMeta; repoId: string }) {
         )}
       </div>
       <div>
+        {pr.findings?.length ? (
+          <SeverityCounts findings={pr.findings} repoFullName={repoFullName} headSha={pr.head_sha} />
+        ) : (
+          <span style={s.muted}>—</span>
+        )}
+      </div>
+      <div>
         <Badge dot color={st.c} bg="transparent">
           {t(`list.status.${st.labelKey}`)}
         </Badge>
+      </div>
+      <div>
+        <RunCostBadge costUsd={pr.cost_usd} />
       </div>
       <div style={s.updatedCell}>{relativeTime(pr.updated_at)}</div>
     </div>
